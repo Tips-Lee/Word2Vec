@@ -1,5 +1,6 @@
 import jieba
 import os, json, re
+import numpy as np
 from collections import Counter, defaultdict
 PAD = '<PAD>'
 UNKNOWN = '<UNKNOWN>'
@@ -95,8 +96,58 @@ def convert_words_to_record(infile, outfile, encoding='utf-8', window=4, structu
                     writer.writelines('%s\n' % ' '.join(record))
 
 
+class DataManager(object):
+    def __init__(self, data_path, dict_path, structure='cbow', batch_size=8, window=4, encoding='utf-8', shuffle=True):
+        words = json.load(open(dict_path, 'r', encoding=encoding))
+        self.word_size = len(words)
+        self.word_to_id = dict(zip(words, range(self.word_size)))
+        self.id_to_words = words
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+
+        with open(data_path, 'r', encoding=encoding) as reader:
+            X, Y = [], []
+            for line in reader:
+                sample_words = line.strip().split(' ')
+                if len(sample_words) != window + 1:
+                    continue
+                sample_words_ids = [self.word_to_id[word] if word in self.word_to_id else self.word_to_id[UNKNOWN] for word in sample_words]
+                if structure == 'cbow':
+                    x = sample_words_ids[:-1]
+                    y = sample_words_ids[-1:]
+                else:
+                    x = sample_words_ids[:1]
+                    y = sample_words_ids[1:]
+                X.append(x)
+                Y.append(y)
+        self.X = np.asarray(X)  # [total_sample, window] or [total_sample]
+        self.Y = np.asarray(Y)  # [total_sample] or [total_sample, window]
+        self.total_samples = len(self.X)
+        self.total_batch = int(np.ceil(self.total_samples/self.batch_size))
+        print('---')
+
+    def __iter__(self):
+        if self.shuffle:
+            total_index = np.random.permutation(self.total_samples)
+        else:
+            total_index = np.arange(self.total_samples)
+
+        for batch_idx in range(self.total_batch):
+            start = batch_idx * self.batch_size
+            end = start + self.batch_size
+            idx = total_index[start:end]
+            batch_x = self.X[idx]
+            batch_y = self.Y[idx]
+            yield batch_x, batch_y
+        raise StopIteration
+
+    def __len__(self):
+        return self.total_batch
+
+
 if __name__ == '__main__':
-    words = ['我', '是','中国人','，','我','爱','中国']
-    ans = build_record(words, window=4, structure='cbow')
-    for i in ans:
-        print(i)
+    datamanager = DataManager(data_path='../data/train.cbow.data', dict_path='../data/dictionary.json')
+    for x, y in datamanager:
+        print(x)
+        print(y)
+        break

@@ -19,3 +19,8 @@
 运行命令  python convert_data.py  --opt=record  --record_input_file=./data/cut_in_the_name_of_people.txt  --record_output_file=./data/train.cbow.data  --window=4 --structure=cbow  --allow_padding=True
 构建skip-gram数据：
 运行命令  python convert_data.py  --opt=record  --record_input_file=./data/cut_in_the_name_of_people.txt  --record_output_file=./data/train.skip-gram.data  --window=4 --structure=skip-gram  --allow_padding=False
+
+4、训练数据加载
+见 utils/data_utils.py
+
+5、
