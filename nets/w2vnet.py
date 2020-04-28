@@ -2,6 +2,7 @@ import tensorflow as tf
 import os
 
 
+
 class CBOWNetwork(object):
     def __init__(self, vocab_size=3000, window=4, embedding_size=128, num_sampled=100, is_mean=True, name='CBOW',
                  regularization=0.001, optimizer_name='adam', learning_rate=0.001, checkpoint_dir='./running/model'):

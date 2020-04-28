@@ -97,7 +97,7 @@ def convert_words_to_record(infile, outfile, encoding='utf-8', window=4, structu
 
 
 class DataManager(object):
-    def __init__(self, data_path, dict_path, structure='cbow', batch_size=8, window=4, encoding='utf-8', shuffle=True):
+    def __init__(self, data_path, dict_path, structure='cbow', batch_size=128, window=4, encoding='utf-8', shuffle=True):
         words = json.load(open(dict_path, 'r', encoding=encoding))
         self.word_size = len(words)
         self.word_to_id = dict(zip(words, range(self.word_size)))
@@ -124,7 +124,6 @@ class DataManager(object):
         self.Y = np.asarray(Y)  # [total_sample] or [total_sample, window]
         self.total_samples = len(self.X)
         self.total_batch = int(np.ceil(self.total_samples/self.batch_size))
-        print('---')
 
     def __iter__(self):
         if self.shuffle:
