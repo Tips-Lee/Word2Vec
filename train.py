@@ -1,5 +1,5 @@
 import tensorflow as tf
-from nets.w2vnet import CBOWNetwork
+from nets.w2vnet import CBOWNetwork, SkipGramNetwork
 from utils.data_utils import DataManager
 import os
 # parameters
@@ -40,7 +40,6 @@ tf.flags.DEFINE_integer('checkpoint_per_batch', 100, 'checkpoint_per_batch')
 tf.flags.DEFINE_string('summary_dir', './running/graph', 'summary_dir')
 
 
-
 def main(_):
     # 0、模型参数校验
     if not os.path.exists(FLAGS.data_path):
@@ -64,16 +63,29 @@ def main(_):
                                      shuffle=True)
     with tf.Graph().as_default():
         # 1. 网络构建
-        model = CBOWNetwork(vocab_size=train_data_manager.word_size,
-                            window=FLAGS.window_size,
-                            embedding_size=FLAGS.embedding_size,
-                            num_sampled=FLAGS.num_sampled,
-                            is_mean=FLAGS.CBOW_mean,
-                            name=FLAGS.network_name,
-                            regularization=FLAGS.regularization,
-                            optimizer_name=FLAGS.optimizer_name,
-                            learning_rate=FLAGS.learning_rate,
-                            checkpoint_dir=FLAGS.checkpoint_dir)
+        if FLAGS.structure == 'cbow':
+            tf.logging.info('开始初始化CBOW网络结构...')
+            model = CBOWNetwork(vocab_size=train_data_manager.word_size,
+                                window=FLAGS.window_size,
+                                embedding_size=FLAGS.embedding_size,
+                                num_sampled=FLAGS.num_sampled,
+                                is_mean=FLAGS.CBOW_mean,
+                                name=FLAGS.network_name,
+                                regularization=FLAGS.regularization,
+                                optimizer_name=FLAGS.optimizer_name,
+                                learning_rate=FLAGS.learning_rate,
+                                checkpoint_dir=FLAGS.checkpoint_dir)
+        else:
+            tf.logging.info('开始初始化skip-gram网络结构...')
+            model = SkipGramNetwork(vocab_size=train_data_manager.word_size,
+                                    window=FLAGS.window_size,
+                                    embedding_size=FLAGS.embedding_size,
+                                    num_sampled=FLAGS.num_sampled,
+                                    name=FLAGS.network_name,
+                                    regularization=FLAGS.regularization,
+                                    optimizer_name=FLAGS.optimizer_name,
+                                    learning_rate=FLAGS.learning_rate,
+                                    checkpoint_dir=FLAGS.checkpoint_dir)
         # 1.1 前向网络构建
         tf.logging.info('开始构建前向网络结构...')
         model.interface()
@@ -87,6 +99,7 @@ def main(_):
         tf.logging.info('开始进行评估...')
         model.metrics(loss=loss)
         # 1.5 构建可视化相关信息
+        tf.logging.info('开始构建可视化、持久化对象...')
         summary_op = tf.summary.merge_all()
         writer = tf.summary.FileWriter(FLAGS.summary_dir, graph=tf.get_default_graph())
 
@@ -96,7 +109,7 @@ def main(_):
             tf.logging.info('开始加载模型初始化参数...')
             model.restore(session=sess)
 
-            # 2.3 迭代训练
+            # 2.2 迭代训练
             for epoch in range(FLAGS.max_epoch):
                 for batch_x, batch_y in train_data_manager:
                     feed_dict = {model.input_x: batch_x, model.target: batch_y}

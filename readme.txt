@@ -27,5 +27,6 @@
 5.1 大的框架搭建
 5.2 将各个部分代码完善
 5.3 代码整理
-5.4 运行命令 python train.py --data_path=./data/train.cbow.data --dict_path=./data/dictionary.json --network_name=w2w --embedding_size=128 --window_size=4 --CBOW_mean=True --structure=cbow --num_sampled=100
---batch_size=1500 --max_epoch=100 --optimizer_name=adam --learning_rate=0.001 --regularization=0.0001 --checkpoint_dir=./running/model/cbow --checkpoint_per_batch=100 --summary_dir=./running/graph/cbow
+5.4 运行命令
+5.4.1 CBOW: python train.py --data_path=./data/train.cbow.data --dict_path=./data/dictionary.json --network_name=w2w --embedding_size=128 --window_size=4 --CBOW_mean=True --structure=cbow --num_sampled=100 --batch_size=1500 --max_epoch=100 --optimizer_name=adam --learning_rate=0.001 --regularization=0.0001 --checkpoint_dir=./running/model/cbow --checkpoint_per_batch=100 --summary_dir=./running/graph/cbow
+5.4.2 skip-gram: python train.py --data_path=./data/train.skip-gram.data --dict_path=./data/dictionary.json --network_name=w2w --embedding_size=128 --window_size=4 --structure=skip-gram --num_sampled=100 --batch_size=1500 --max_epoch=100 --optimizer_name=adam --learning_rate=0.001 --regularization=0.0001 --checkpoint_dir=./running/model/skip-gram --checkpoint_per_batch=100 --summary_dir=./running/graph/skip-gram
