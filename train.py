@@ -1,5 +1,6 @@
 import tensorflow as tf
-from nets.w2vnet import CBOWNetwork, SkipGramNetwork
+from nets.w2v_cbow import CBOWNetwork
+from nets.w2v_skip_gram import SkipGramNetwork
 from utils.data_utils import DataManager
 import os
 # parameters
